@@ -1,22 +1,28 @@
 # Chemical Equipment Parameter Visualizer (Hybrid Web + Desktop)
 
-A full-stack hybrid application that runs as both a **Web Application (React)** and a **Desktop Application (PyQt5)**, powered by a single **Django Backend**.
+A full-stack hybrid application designed to analyze and visualize chemical equipment data. The system consists of a **Django REST Framework** backend that serves two synchronized frontends: a **React.js Web Dashboard** and a **PyQt5 Desktop Application**.
 
 ## 🚀 Features
-- **Hybrid Architecture:** One backend serving two different frontends.
-- **Analytics Engine:** Python Pandas calculates statistics (Average Pressure, Temperature).
-- **Visualization:** Chart.js (Web) and Matplotlib (Desktop).
+- **Hybrid Architecture:** Seamless synchronization between Web and Desktop clients.
+- **Data Analytics:** automated parsing of CSV files to calculate average pressure, temperature, and equipment distribution.
+- **Visualization:** Interactive charts using **Chart.js** (Web) and **Matplotlib** (Desktop).
+- **Secure Authentication:** Token-based login system for API access.
+- **Report Generation:** Auto-generated PDF reports of the latest analysis.
+- **History Tracking:** Persists the last 5 uploads using SQLite.
 
-## 🛠️ Tech Stack
-- **Backend:** Django REST Framework, Pandas
-- **Web:** React.js, Axios, Chart.js
-- **Desktop:** PyQt5, Matplotlib, Requests
+## 🛠 Tech Stack
+- **Backend:** Python, Django, Django REST Framework, Pandas
+- **Frontend (Web):** React.js, Chart.js, Axios
+- **Frontend (Desktop):** Python, PyQt5, Matplotlib, Requests
+- **Database:** SQLite
 
-## ⚙️ How to Run
+## ⚙️ Setup Instructions
 
-### 1. Start Backend
+### 1. Backend Setup (Django)
 ```bash
-cd ChemicalApp
-venv\Scripts\activate
 cd backend
+python -m venv venv
+# Activate venv (Windows: venv\Scripts\activate, Mac/Linux: source venv/bin/activate)
+pip install -r requirements.txt
+python manage.py migrate
 python manage.py runserver

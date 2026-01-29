@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'rest_framework.authtoken',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -41,7 +42,11 @@ INSTALLED_APPS = [
     'corsheaders',
       'api',
 ]
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -120,3 +125,4 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 CORS_ALLOW_ALL_ORIGINS = True
+
