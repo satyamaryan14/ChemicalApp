@@ -1,28 +1,71 @@
-# Chemical Equipment Parameter Visualizer (Hybrid Web + Desktop)
+# Chemical Equipment Parameter Visualizer 🧪📊
 
-A full-stack hybrid application designed to analyze and visualize chemical equipment data. The system consists of a **Django REST Framework** backend that serves two synchronized frontends: a **React.js Web Dashboard** and a **PyQt5 Desktop Application**.
+A **Hybrid Web & Desktop Application** designed to visualize and analyze chemical equipment parameters. This project demonstrates a full-stack architecture where both a **React Web Client** and a **PyQt5 Desktop Client** consume a shared **Django REST Framework** backend.
+
+---
 
 ## 🚀 Features
-- **Hybrid Architecture:** Seamless synchronization between Web and Desktop clients.
-- **Data Analytics:** automated parsing of CSV files to calculate average pressure, temperature, and equipment distribution.
-- **Visualization:** Interactive charts using **Chart.js** (Web) and **Matplotlib** (Desktop).
-- **Secure Authentication:** Token-based login system for API access.
-- **Report Generation:** Auto-generated PDF reports of the latest analysis.
-- **History Tracking:** Persists the last 5 uploads using SQLite.
 
-## 🛠 Tech Stack
-- **Backend:** Python, Django, Django REST Framework, Pandas
-- **Frontend (Web):** React.js, Chart.js, Axios
-- **Frontend (Desktop):** Python, PyQt5, Matplotlib, Requests
-- **Database:** SQLite
+* **Hybrid Architecture:** Seamless synchronization between Web and Desktop platforms using a single database.
+* **Data Analysis:** Upload CSV files to parse equipment data (Pressure, Temperature, Flowrate).
+* **Interactive Visualization:**
+    * **Desktop:** Native graphs using **Matplotlib**.
+    * **Web:** Interactive charts using **Chart.js**.
+* **History Management:** Automatically stores and syncs the last 5 uploaded datasets.
+* **PDF Reporting:** Generate and download PDF reports of the current analytics.
+* **Secure Authentication:** Token-based authentication for both client platforms.
 
-## ⚙️ Setup Instructions
+---
 
-### 1. Backend Setup (Django)
+## 🛠️ Tech Stack
+
+| Component | Technology | Description |
+| :--- | :--- | :--- |
+| **Backend** | Django + DRF | REST API, Data Parsing, Authentication |
+| **Web Frontend** | React.js + Chart.js | Responsive Dashboard & Visualization |
+| **Desktop Client** | PyQt5 + Matplotlib | Native GUI application for Windows/Linux |
+| **Data Processing** | Pandas | Efficient CSV parsing and statistical analysis |
+| **Database** | SQLite | Lightweight storage for user history |
+
+---
+
+## 📸 Screenshots
+
+### 1. Web & Desktop Dashboards
+![Project Screenshot](image-1.png)
+*(Note: If the image above doesn't load, drag and drop your screenshot file here)*
+
+---
+
+## ⚙️ Installation & Setup Guide
+
+This project requires **3 separate terminals** running simultaneously.
+
+### 1. Backend Setup (Django) 🧠
+*Open Terminal 1*
 ```bash
 cd backend
+
+# Create & Activate Virtual Environment
 python -m venv venv
-# Activate venv (Windows: venv\Scripts\activate, Mac/Linux: source venv/bin/activate)
+# Windows:
+..\venv\Scripts\activate
+# Mac/Linux:
+source ../venv/bin/activate
+
+# Install Dependencies
 pip install -r requirements.txt
+
+# Setup Database & Admin
 python manage.py migrate
+python manage.py createsuperuser
+
+# Start Server
 python manage.py runserver
+cd web-client
+
+# Install Libraries
+npm install
+
+# Start React App
+npm start

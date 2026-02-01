@@ -1,0 +1,8 @@
+EquipmentType,Pressure,Temperature,Status
+Pump,10.5,80,Active
+Valve,5.2,60,Inactive
+Reactor,25.0,150,Active
+Pump,11.0,85,Maintenance
+Valve,4.8,55,Active
+Pipe,8.0,40,Active
+Reactor,24.5,145,Active
