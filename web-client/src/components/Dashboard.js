@@ -15,6 +15,7 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip as ChartTooltip, Legend, LineController, BarController
 } from "chart.js";
 
+// Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, ChartTooltip, Legend, LineController, BarController);
 
 // --- HELPERS ---
@@ -112,7 +113,7 @@ const Dashboard = ({ token, onLogout }) => {
   return (
     <Box sx={{ flexGrow: 1, backgroundColor: "#f5f5f5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       
-      {/* 1. Header (Matches Sketch Top Bar) */}
+      {/* 1. Header */}
       <AppBar position="static" elevation={0} sx={{ backgroundColor: '#1a237e', zIndex: theme.zIndex.drawer + 1 }}>
         <Toolbar variant="dense">
           <ScienceIcon sx={{ mr: 2 }} />
@@ -125,13 +126,15 @@ const Dashboard = ({ token, onLogout }) => {
         </Toolbar>
       </AppBar>
 
-      {/* Main Content Area */}
-      <Container maxWidth={false} sx={{ mt: 2, mb: 2, flexGrow: 1, display: 'flex' }}>
-        <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+      {/* Main Content Area 
+          CHANGED: Using <Container maxWidth="xl"> to center content with equal margins.
+      */}
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
+        <Grid container spacing={3} justifyContent="center">
           
-          {/* LEFT: GRAPH (Matches Sketch Left Box) */}
+          {/* LEFT: GRAPH (9 Columns - 75%) */}
           <Grid item xs={12} md={9} sx={{ display: 'flex' }}>
-            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', width: '100%', height: '85vh', borderRadius: 2 }} elevation={2}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', width: '100%', height: '80vh', borderRadius: 2 }} elevation={3}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                  <Typography variant="h6" color="primary" fontWeight="bold">Parameter Analysis vs. Safety Limits</Typography>
                  {data && <Chip label="Live Monitoring" color="success" size="small" />}
@@ -148,10 +151,10 @@ const Dashboard = ({ token, onLogout }) => {
             </Paper>
           </Grid>
 
-          {/* RIGHT: SIDEBAR (Matches Sketch Right Side) */}
-          <Grid item xs={12} md={3} sx={{ display: 'flex', flexDirection: 'column', height: '85vh' }}>
+          {/* RIGHT: SIDEBAR (3 Columns - 25%) */}
+          <Grid item xs={12} md={3} sx={{ display: 'flex', flexDirection: 'column', height: '80vh' }}>
             
-            {/* 1. UPLOAD BUTTON (Top Right in Sketch) */}
+            {/* UPLOAD BUTTON */}
             <Button 
               variant="contained" 
               component="label" 
@@ -165,8 +168,8 @@ const Dashboard = ({ token, onLogout }) => {
               <input type="file" hidden onChange={handleFileUpload} accept=".csv" />
             </Button>
 
-            {/* 2. TABLE (Below Button in Sketch) */}
-            <Paper sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', borderRadius: 2, overflow: 'hidden' }} elevation={2}>
+            {/* RECENT UPLOADS TABLE */}
+            <Paper sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', borderRadius: 2, overflow: 'hidden' }} elevation={3}>
               <Box sx={{ p: 2, bgcolor: '#f0f0f0', borderBottom: '1px solid #ddd' }}>
                 <Typography variant="subtitle1" fontWeight="bold">Recent Uploads</Typography>
               </Box>
@@ -182,7 +185,7 @@ const Dashboard = ({ token, onLogout }) => {
                     {history.map((row) => (
                       <TableRow key={row.id} hover onClick={() => processChartData(row)} sx={{ cursor: 'pointer' }}>
                         <TableCell component="th" scope="row">
-                          <Typography variant="body2" noWrap sx={{ maxWidth: 100 }}>
+                          <Typography variant="body2" noWrap sx={{ maxWidth: 120 }}>
                              {cleanFilename(row.filename || row.file_name)}
                           </Typography>
                         </TableCell>

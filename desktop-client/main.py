@@ -1,132 +1,139 @@
 import sys
 import requests
-import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, 
-                             QLabel, QFileDialog, QMessageBox, QHBoxLayout, QFrame, QListWidget)
-from PyQt5.QtGui import QFont, QIcon, QColor
+                             QLabel, QFileDialog, QMessageBox, QHBoxLayout, QFrame, QListWidget, QSizePolicy, QLineEdit)
+from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
+
+# --- SAFE IMPORT FOR MATERIAL DESIGN ---
+try:
+    from qt_material import apply_stylesheet
+    MATERIAL_AVAILABLE = True
+except ImportError:
+    MATERIAL_AVAILABLE = False
 
 # --- CONFIGURATION ---
 API_URL = "http://127.0.0.1:8000/api"
-THEME_COLOR = "#1a237e"  # Matches your React App Navbar
 
 class ChemicalApp(QWidget):
     def __init__(self):
         super().__init__()
         self.token = None
         self.initUI()
+        self.plot_data({}) 
 
     def initUI(self):
-        self.setWindowTitle("Chemical Equipment Visualizer (Desktop Client)")
+        self.setWindowTitle("Chemical Equipment Visualizer")
         self.setGeometry(100, 100, 1200, 800)
-        self.setStyleSheet("background-color: #f5f5f5;") # Light Grey Background
+        
+        if not MATERIAL_AVAILABLE:
+            self.setStyleSheet("background-color: #f5f5f5;")
 
-        # Main Layout
         main_layout = QHBoxLayout()
         
-        # --- LEFT SIDE: CHART (75%) ---
+        # --- LEFT SIDE: CHART ---
         left_layout = QVBoxLayout()
+        left_layout.setContentsMargins(0, 0, 10, 0)
         
-        # Header
         self.header = QLabel("Real-time Sensor Analytics")
-        self.header.setFont(QFont('Segoe UI', 16, QFont.Bold))
-        self.header.setStyleSheet(f"color: {THEME_COLOR}; margin-bottom: 10px;")
+        self.header.setFont(QFont('Segoe UI', 20, QFont.Bold)) 
         left_layout.addWidget(self.header)
 
         # Matplotlib Figure
         self.figure, self.ax = plt.subplots(figsize=(8, 6))
+        self.figure.subplots_adjust(left=0.08, right=0.98, top=0.95, bottom=0.1)
+        self.figure.patch.set_facecolor('none') 
+        
         self.canvas = FigureCanvas(self.figure)
-        self.figure.patch.set_facecolor('#f5f5f5') # Match background
+        self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.canvas.setStyleSheet("background-color:transparent;")
         left_layout.addWidget(self.canvas)
         
-        # Login/Status Frame
         self.status_label = QLabel("Status: Not Logged In")
-        self.status_label.setStyleSheet("color: #666; font-size: 12px;")
+        self.status_label.setStyleSheet("font-size: 14px; margin-top: 5px;")
         left_layout.addWidget(self.status_label)
 
-        main_layout.addLayout(left_layout, 7) # Stretch factor 7
+        main_layout.addLayout(left_layout, 7)
 
-        # --- RIGHT SIDE: SIDEBAR (25%) ---
+        # --- RIGHT SIDE: SIDEBAR ---
         right_frame = QFrame()
-        right_frame.setStyleSheet("background-color: white; border-radius: 10px; border: 1px solid #ddd;")
+        if not MATERIAL_AVAILABLE:
+            right_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 8px;")
+        
         right_layout = QVBoxLayout(right_frame)
         right_layout.setContentsMargins(20, 20, 20, 20)
         right_layout.setSpacing(15)
 
+        # --- NEW: LOGIN INPUT FIELDS ---
+        self.user_input = QLineEdit()
+        self.user_input.setPlaceholderText("Username")
+        self.user_input.setText("aryan") # Default text for demo
+        right_layout.addWidget(self.user_input)
+
+        self.pass_input = QLineEdit()
+        self.pass_input.setPlaceholderText("Password")
+        self.pass_input.setEchoMode(QLineEdit.Password) # Hides password with ***
+        self.pass_input.setText("pass1234") # Default text for demo
+        right_layout.addWidget(self.pass_input)
+
         # 1. Login Button
         self.login_btn = QPushButton("Login to Server")
-        self.style_button(self.login_btn, is_primary=False)
+        self.login_btn.setCursor(Qt.PointingHandCursor)
         self.login_btn.clicked.connect(self.login)
+        if MATERIAL_AVAILABLE:
+            self.login_btn.setProperty('class', 'primary')
+        else:
+            self.login_btn.setStyleSheet("background-color: #1a237e; color: white; padding: 10px; border-radius: 5px;")
         right_layout.addWidget(self.login_btn)
 
-        # 2. Upload Button (Big Blue)
-        self.upload_btn = QPushButton(" UPLOAD CSV")
-        self.style_button(self.upload_btn, is_primary=True)
+        # 2. Upload Button
+        self.upload_btn = QPushButton("UPLOAD CSV DATA")
+        self.upload_btn.setCursor(Qt.PointingHandCursor)
         self.upload_btn.clicked.connect(self.upload_file)
-        self.upload_btn.setEnabled(False) # Disabled until login
+        self.upload_btn.setEnabled(False)
+        if MATERIAL_AVAILABLE:
+            self.upload_btn.setProperty('class', 'success')
+        else:
+            self.upload_btn.setStyleSheet("background-color: #4caf50; color: white; padding: 10px; border-radius: 5px;")
+        self.upload_btn.setFixedHeight(50)
         right_layout.addWidget(self.upload_btn)
 
         # 3. History List
         history_label = QLabel("Recent Uploads")
-        history_label.setFont(QFont('Segoe UI', 11, QFont.Bold))
-        history_label.setStyleSheet("border: none; margin-top: 20px;")
+        history_label.setFont(QFont('Segoe UI', 12, QFont.Bold))
+        history_label.setStyleSheet("border: none; margin-top: 10px;")
         right_layout.addWidget(history_label)
 
         self.history_list = QListWidget()
-        self.history_list.setStyleSheet("""
-            QListWidget { border: 1px solid #eee; border-radius: 5px; padding: 5px; }
-            QListWidget::item { padding: 8px; border-bottom: 1px solid #eee; }
-            QListWidget::item:selected { background-color: #e3f2fd; color: #1565c0; }
-        """)
         self.history_list.itemClicked.connect(self.load_chart_from_history)
         right_layout.addWidget(self.history_list)
 
-        # Add right frame to main layout
-        main_layout.addWidget(right_frame, 3) # Stretch factor 3
-
+        main_layout.addWidget(right_frame, 3)
         self.setLayout(main_layout)
 
-    def style_button(self, button, is_primary=True):
-        bg_color = THEME_COLOR if is_primary else "#ffffff"
-        text_color = "#ffffff" if is_primary else THEME_COLOR
-        border = "none" if is_primary else f"2px solid {THEME_COLOR}"
-        
-        button.setFont(QFont('Segoe UI', 10, QFont.Bold))
-        button.setCursor(Qt.PointingHandCursor)
-        button.setFixedHeight(45)
-        button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {bg_color};
-                color: {text_color};
-                border: {border};
-                border-radius: 8px;
-            }}
-            QPushButton:hover {{
-                background-color: {'#283593' if is_primary else '#f0f4c3'};
-            }}
-        """)
-
     def login(self):
-        # Hardcoded for the demo video speed (or popup a dialog)
-        # In a real app, you'd use QInputDialog
-        username = "admin" 
-        password = "pass1234" # Make sure this matches your createsuperuser!
-        
+        # --- GET CREDENTIALS FROM INPUT BOXES ---
+        username = self.user_input.text()
+        password = self.pass_input.text()
+
         try:
-            response = requests.post(f"{API_URL}/login/", json={"username": username, "password": password})
+            response = requests.post(f"{API_URL}/login/", data={"username": username, "password": password})
             if response.status_code == 200:
                 self.token = response.json()['token']
                 self.status_label.setText(f"Status: Logged in as {username}")
-                self.status_label.setStyleSheet("color: green; font-weight: bold;")
                 self.login_btn.setText("Logged In ✓")
                 self.login_btn.setEnabled(False)
+                # Hide inputs after login for cleaner look
+                self.user_input.setVisible(False)
+                self.pass_input.setVisible(False)
+                
                 self.upload_btn.setEnabled(True)
                 self.fetch_history()
                 QMessageBox.information(self, "Success", "Connected to Hybrid Backend!")
             else:
-                QMessageBox.warning(self, "Error", "Login Failed")
+                QMessageBox.warning(self, "Login Failed", f"Server said: {response.text}")
         except Exception as e:
             QMessageBox.critical(self, "Connection Error", f"Is Django running?\n{str(e)}")
 
@@ -141,8 +148,6 @@ class ChemicalApp(QWidget):
                 for item in self.history_data:
                     name = item.get('filename', 'Unknown').replace('.csv', '')
                     self.history_list.addItem(f"📄 {name}")
-                
-                # Load the first one automatically
                 if self.history_data:
                     self.plot_data(self.history_data[0])
         except Exception as e:
@@ -169,28 +174,29 @@ class ChemicalApp(QWidget):
     def plot_data(self, data):
         self.ax.clear()
         
-        # Simulated data visualization based on ID
-        # In a real app, you would parse the actual CSV here
-        fid = data.get('id', 0)
-        
-        categories = ['Pressure', 'Temp', 'Flow', 'Viscosity']
-        values = [65 + (fid % 20), 59 + (fid % 15), 80 - (fid % 10), 45 + (fid % 5)]
-        
+        fid = data.get('id', 1)
+        stats = data.get('stats', {})
+        chart_labels = stats.get('chart_labels', ['Pressure', 'Temp', 'Flow', 'Viscosity'])
+        chart_data = stats.get('chart_data', [65, 59, 80, 45])
+
         # Create Bar Chart
-        bars = self.ax.bar(categories, values, color=['#1976d2', '#d32f2f', '#388e3c', '#fbc02d'])
-        
-        # Add a threshold line
+        self.ax.bar(chart_labels, chart_data, color=['#1976d2', '#d32f2f', '#388e3c', '#fbc02d'])
         self.ax.axhline(y=85, color='red', linestyle='--', label='Safety Limit')
         
-        self.ax.set_title(f"Analysis: {data.get('filename', '')}", fontsize=12)
+        filename = data.get('filename', 'Demo Mode')
+        self.ax.set_title(f"Analysis: {filename}", fontsize=12)
         self.ax.set_ylabel("Sensor Units")
         self.ax.legend()
         self.ax.grid(axis='y', linestyle=':', alpha=0.7)
-        
         self.canvas.draw()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    
+    # --- APPLY MATERIAL THEME IF AVAILABLE ---
+    if MATERIAL_AVAILABLE:
+        apply_stylesheet(app, theme='light_blue.xml')
+        
     ex = ChemicalApp()
     ex.show()
     sys.exit(app.exec_())
